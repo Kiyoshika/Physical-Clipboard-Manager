@@ -23,6 +23,7 @@
 
 /* USER CODE BEGIN INCLUDE */
 #include "flash_memory.h"
+#include "addresses.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -263,8 +264,18 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-  //memcpy((uint8_t*)buffer, Buf, (size_t)(*Len));
-  write_string_to_flash((char*)Buf, 0x08060000);
+
+  char* Buf_char = (char*)Buf;
+  char write_data[255] = {0};
+
+  // get command type (e.g. COPY1, PASTE4)
+  if (strncmp(Buf_char, "COPY1", 5) == 0)
+  {
+	  // clear_flash(CLIPBOARD1_BEGIN_ADDRESS, CLIPBOARD1_END_ADDRESS);
+	  strncpy(write_data, &Buf_char[5], 255);
+	  write_metadata_to_flash(strlen(write_data), CLIPBOARD1_METADATA_ADDRESS);
+	  write_string_to_flash(write_data, CLIPBOARD1_BEGIN_ADDRESS);
+  }
   return (USBD_OK);
   /* USER CODE END 6 */
 }

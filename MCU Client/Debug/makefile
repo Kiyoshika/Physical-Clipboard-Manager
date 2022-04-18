@@ -64,8 +64,8 @@ all: main-build
 main-build: PhysicalClipboardManager2.elf secondary-outputs
 
 # Tool invocations
-PhysicalClipboardManager2.elf PhysicalClipboardManager2.map: $(OBJS) $(USER_OBJS) C:\Users\zach_\STM32CubeIDE\workspace_1.8.0\PhysicalClipboardManager2\STM32F411CEUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "PhysicalClipboardManager2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\zach_\STM32CubeIDE\workspace_1.8.0\PhysicalClipboardManager2\STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PhysicalClipboardManager2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+PhysicalClipboardManager2.elf PhysicalClipboardManager2.map: $(OBJS) $(USER_OBJS) C:\Users\zach_\STM32CubeIDE\workspace_1.8.0\PhysicalClipboardManager2\MCU\ Client\STM32F411CEUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "PhysicalClipboardManager2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\zach_\STM32CubeIDE\workspace_1.8.0\PhysicalClipboardManager2\MCU Client\STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PhysicalClipboardManager2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

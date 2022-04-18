@@ -20,6 +20,8 @@
 #include "main.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
+#include "flash_memory.h"
+#include "addresses.h"
 #include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
@@ -89,15 +91,33 @@ int main(void)
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-  char* data = "hello from MCU!\n";
+  char data[256];
+  char read_data[256];
+  char send_server_data[256];
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  CDC_Transmit_FS((uint8_t*)data, strlen(data));
-	  HAL_Delay(1000);
+	  if (HAL_GPIO_ReadPin(GPIOA, Copy_Button_1_Pin))
+	  {
+		  strncpy(data, "COPY1", strlen("COPY1") + 1);
+		  CDC_Transmit_FS((uint8_t*)data, strlen(data));
+		  memset(&data, 0, strlen(data));
+		  HAL_Delay(1000);
+	  }
+
+	  else if (HAL_GPIO_ReadPin(GPIOA, Copy_Button_2_Pin))
+	  {
+		  read_string_from_flash(read_data, CLIPBOARD1_METADATA_ADDRESS, CLIPBOARD1_BEGIN_ADDRESS);
+		  strncpy(send_server_data, "PASTE1", 7);
+		  strncat(send_server_data, read_data, 254);
+		  CDC_Transmit_FS((uint8_t*)send_server_data, strlen(send_server_data));
+		  memset(&read_data, 0, 256);
+		  memset(&send_server_data, 0, 256);
+		  HAL_Delay(1000);
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
