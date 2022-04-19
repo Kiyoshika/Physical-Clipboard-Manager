@@ -1,4 +1,4 @@
-../Core/Src/flash_memory.c:3:6:clear_flash	16	static
-../Core/Src/flash_memory.c:17:6:write_string_to_flash	48	static
-../Core/Src/flash_memory.c:36:6:write_metadata_to_flash	24	static
-../Core/Src/flash_memory.c:43:6:read_string_from_flash	32	static
+../Core/Src/flash_memory.c:4:6:clear_flash	552	static
+../Core/Src/flash_memory.c:42:6:write_string_to_flash	48	static
+../Core/Src/flash_memory.c:61:6:write_metadata_to_flash	24	static
+../Core/Src/flash_memory.c:68:6:read_string_from_flash	32	static

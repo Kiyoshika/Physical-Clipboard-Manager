@@ -1,14 +1,39 @@
 #include "flash_memory.h"
+#include "addresses.h"
 
-void clear_flash(uint32_t beginning_address, uint32_t ending_address)
+void clear_flash(uint32_t write_address)
 {
-	HAL_FLASH_Unlock();
-	while (beginning_address < ending_address)
+	uint32_t addresses[2] = {
+			CLIPBOARD1_BEGIN_ADDRESS,
+			CLIPBOARD2_BEGIN_ADDRESS
+	};
+
+	char copy_buffers[2][255] = {{0},{0}};
+	size_t buffer_lengths[2] = {0, 0};
+
+	for (size_t i = 0; i < 2; ++i)
 	{
-		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, beginning_address, 0xFFFFFFFF);
-		beginning_address += 0x04;
+		if (addresses[i] == write_address)
+			continue;
+		else // note: metadata address is always 4 bytes before the begin address
+			read_string_from_flash(copy_buffers[i], &buffer_lengths[i], addresses[i] - 0x04, addresses[i]);
 	}
+
+	HAL_FLASH_Unlock();
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
+	FLASH_Erase_Sector(FLASH_SECTOR_7, VOLTAGE_RANGE_3);
 	HAL_FLASH_Lock();
+	// after erasing flash, copy the other addresses (besides the one we're about to write to via copy)
+	for (size_t i = 0; i < 2; ++i)
+	{
+		if (addresses[i] == write_address)
+			continue;
+		else
+		{
+			write_metadata_to_flash(buffer_lengths[i], addresses[i] - 0x04);
+			write_string_to_flash(copy_buffers[i], addresses[i]);
+		}
+	}
 }
 
 /**
@@ -40,9 +65,13 @@ void write_metadata_to_flash(uint32_t metadata, uint32_t address)
 	HAL_FLASH_Lock();
 }
 
-void read_string_from_flash(char buffer[255], uint32_t metadata_address, uint32_t buffer_address)
+void read_string_from_flash(char buffer[255], size_t* buffer_len, uint32_t metadata_address, uint32_t buffer_address)
 {
-	size_t len = *(uint32_t*)metadata_address; // dereference value at metadata address to extract value of metadata (length of buffer)
+	// if block is empty, do nothing (otherwise it hangs forever)
+	if (*(uint32_t*)buffer_address == 0xFFFFFFFF)
+		return;
+
+	*buffer_len = *(uint32_t*)metadata_address; // dereference value at metadata address to extract value of metadata (length of buffer)
 	char* text = (char*)buffer_address;
-	strncat(buffer, text, len);
+	strncat(buffer, text, *buffer_len);
 }

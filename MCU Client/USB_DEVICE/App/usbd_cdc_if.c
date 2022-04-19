@@ -24,6 +24,7 @@
 /* USER CODE BEGIN INCLUDE */
 #include "flash_memory.h"
 #include "addresses.h"
+#include <stdlib.h>
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -271,7 +272,8 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   // get command type (e.g. COPY1, PASTE4)
   if (strncmp(Buf_char, "COPY1", 5) == 0)
   {
-	  // clear_flash(CLIPBOARD1_BEGIN_ADDRESS, CLIPBOARD1_END_ADDRESS);
+	  memset(&write_data, 0, strlen(write_data));
+	  clear_flash(CLIPBOARD1_BEGIN_ADDRESS);
 	  strncpy(write_data, &Buf_char[5], 255);
 	  write_metadata_to_flash(strlen(write_data), CLIPBOARD1_METADATA_ADDRESS);
 	  write_string_to_flash(write_data, CLIPBOARD1_BEGIN_ADDRESS);
