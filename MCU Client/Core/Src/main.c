@@ -94,6 +94,7 @@ int main(void)
   char data[256];
   char read_data[256];
   char send_server_data[256];
+  size_t read_buffer_len;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -110,7 +111,7 @@ int main(void)
 
 	  else if (HAL_GPIO_ReadPin(GPIOA, Copy_Button_2_Pin))
 	  {
-		  read_string_from_flash(read_data, CLIPBOARD1_METADATA_ADDRESS, CLIPBOARD1_BEGIN_ADDRESS);
+		  read_string_from_flash(read_data, &read_buffer_len, CLIPBOARD1_METADATA_ADDRESS, CLIPBOARD1_BEGIN_ADDRESS);
 		  strncpy(send_server_data, "PASTE1", 7);
 		  strncat(send_server_data, read_data, 254);
 		  CDC_Transmit_FS((uint8_t*)send_server_data, strlen(send_server_data));
