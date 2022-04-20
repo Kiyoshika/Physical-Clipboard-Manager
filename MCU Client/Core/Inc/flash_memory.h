@@ -22,5 +22,5 @@ void write_string_to_flash(const char* buffer, uint32_t address);
 
 void write_metadata_to_flash(uint32_t metadata, uint32_t address);
 
-void read_string_from_flash(char buffer[255], size_t* buffer_len, uint32_t metadata_address, uint32_t buffer_address);
+void read_string_from_flash(char buffer[256], size_t* buffer_len, uint32_t metadata_address, uint32_t buffer_address);
 #endif

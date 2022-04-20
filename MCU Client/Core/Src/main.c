@@ -23,6 +23,7 @@
 #include "flash_memory.h"
 #include "addresses.h"
 #include <string.h>
+#include <stdbool.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -53,7 +54,8 @@
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
-
+static bool send_flash_buffer_to_server(uint32_t metadata_address, uint32_t begin_address);
+static bool send_command_to_server(const char* command);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -91,33 +93,37 @@ int main(void)
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-  char data[256];
-  char read_data[256];
-  char send_server_data[256];
-  size_t read_buffer_len;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  bool button_pressed = false;
   while (1)
   {
+	  // COPY BUTTONS
 	  if (HAL_GPIO_ReadPin(GPIOA, Copy_Button_1_Pin))
-	  {
-		  strncpy(data, "COPY1", strlen("COPY1") + 1);
-		  CDC_Transmit_FS((uint8_t*)data, strlen(data));
-		  memset(&data, 0, strlen(data));
-		  HAL_Delay(1000);
-	  }
-
+		  button_pressed = send_command_to_server("COPY1");
 	  else if (HAL_GPIO_ReadPin(GPIOA, Copy_Button_2_Pin))
+		  button_pressed = send_command_to_server("COPY2");
+	  else if (HAL_GPIO_ReadPin(GPIOA, Copy_Button_3_Pin))
+		  button_pressed = send_command_to_server("COPY3");
+	  else if (HAL_GPIO_ReadPin(GPIOA, Copy_Button_4_Pin))
+		  button_pressed = send_command_to_server("COPY4");
+
+	  // PASTE BUTTONS
+	  else if (HAL_GPIO_ReadPin(GPIOB, Paste_Button_1_Pin))
+		  button_pressed = send_flash_buffer_to_server(CLIPBOARD1_METADATA_ADDRESS, CLIPBOARD1_BEGIN_ADDRESS);
+	  else if (HAL_GPIO_ReadPin(GPIOB, Paste_Button_2_Pin))
+		  button_pressed = send_flash_buffer_to_server(CLIPBOARD2_METADATA_ADDRESS, CLIPBOARD2_BEGIN_ADDRESS);
+	  else if (HAL_GPIO_ReadPin(GPIOA, Paste_Button_3_Pin))
+		  button_pressed = send_flash_buffer_to_server(CLIPBOARD3_METADATA_ADDRESS, CLIPBOARD3_BEGIN_ADDRESS);
+	  else if (HAL_GPIO_ReadPin(GPIOA, Paste_Button_4_Pin))
+		  button_pressed = send_flash_buffer_to_server(CLIPBOARD4_METADATA_ADDRESS, CLIPBOARD4_BEGIN_ADDRESS);
+
+	  if (button_pressed)
 	  {
-		  read_string_from_flash(read_data, &read_buffer_len, CLIPBOARD1_METADATA_ADDRESS, CLIPBOARD1_BEGIN_ADDRESS);
-		  strncpy(send_server_data, "PASTE1", 7);
-		  strncat(send_server_data, read_data, 254);
-		  CDC_Transmit_FS((uint8_t*)send_server_data, strlen(send_server_data));
-		  memset(&read_data, 0, 256);
-		  memset(&send_server_data, 0, 256);
-		  HAL_Delay(1000);
+		  HAL_Delay(200);
+		  button_pressed = false;
 	  }
     /* USER CODE END WHILE */
 
@@ -202,7 +208,26 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static bool send_flash_buffer_to_server(uint32_t metadata_address, uint32_t begin_address)
+{
+	char read_flash_data[256] = {0};
+	char send_server_data[256] = {0};
+	read_string_from_flash(read_flash_data, NULL, metadata_address, begin_address);
+	strncpy(send_server_data, "PASTE", 6);
+	strncat(send_server_data, read_flash_data, 255);
+	CDC_Transmit_FS((uint8_t*)send_server_data, strlen(send_server_data));
 
+	return true;
+}
+
+static bool send_command_to_server(const char* command)
+{
+	char data[256] = {0};
+	strncpy(data, command, strlen(command) + 1);
+	CDC_Transmit_FS((uint8_t*)data, strlen(data));
+
+	return true;
+}
 /* USER CODE END 4 */
 
 /**

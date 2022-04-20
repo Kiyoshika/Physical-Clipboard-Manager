@@ -3,15 +3,19 @@
 
 void clear_flash(uint32_t write_address)
 {
-	uint32_t addresses[2] = {
+	const size_t n_addresses = 4;
+
+	uint32_t addresses[4] = {
 			CLIPBOARD1_BEGIN_ADDRESS,
-			CLIPBOARD2_BEGIN_ADDRESS
+			CLIPBOARD2_BEGIN_ADDRESS,
+			CLIPBOARD3_BEGIN_ADDRESS,
+			CLIPBOARD4_BEGIN_ADDRESS
 	};
 
-	char copy_buffers[2][255] = {{0},{0}};
-	size_t buffer_lengths[2] = {0, 0};
+	char copy_buffers[4][255] = {{0}, {0}, {0}, {0}};
+	size_t buffer_lengths[4] = {0, 0, 0, 0};
 
-	for (size_t i = 0; i < 2; ++i)
+	for (size_t i = 0; i < n_addresses; ++i)
 	{
 		if (addresses[i] == write_address)
 			continue;
@@ -24,7 +28,7 @@ void clear_flash(uint32_t write_address)
 	FLASH_Erase_Sector(FLASH_SECTOR_7, VOLTAGE_RANGE_3);
 	HAL_FLASH_Lock();
 	// after erasing flash, copy the other addresses (besides the one we're about to write to via copy)
-	for (size_t i = 0; i < 2; ++i)
+	for (size_t i = 0; i < n_addresses; ++i)
 	{
 		if (addresses[i] == write_address)
 			continue;
@@ -65,9 +69,9 @@ void write_metadata_to_flash(uint32_t metadata, uint32_t address)
 	HAL_FLASH_Lock();
 }
 
-void read_string_from_flash(char buffer[255], size_t* buffer_len, uint32_t metadata_address, uint32_t buffer_address)
+void read_string_from_flash(char buffer[256], size_t* buffer_len, uint32_t metadata_address, uint32_t buffer_address)
 {
-	// if block is empty, do nothing (otherwise it hangs forever)
+	// if block is empty, do nothing (otherwise it hangs forever/crashes)
 	if (*(uint32_t*)buffer_address == 0xFFFFFFFF)
 		return;
 

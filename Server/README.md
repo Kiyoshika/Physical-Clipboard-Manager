@@ -6,6 +6,7 @@ When a "copy" button is pressed, the MCU will send a message to copy the clipboa
 When a "paste" button is presesd, the MCU will read the appropriate contents from FLASH memory and send a message to server to replace the current clipboard content.
 
 # Usage
+NOTE: Please use ESCAPE key instead of Ctrl+C to kill the server. This will *properly* close the communication instead of leaving it open.
 ```text
 cbm [PORT] # PORT = port the device is connected to. On Windows, it will be something like COM3
 
