@@ -130,7 +130,7 @@ static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 static int8_t CDC_TransmitCplt_FS(uint8_t *pbuf, uint32_t *Len, uint8_t epnum);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
-
+static void write_buffer_to_flash(const char* buffer, uint32_t metadata_address, uint32_t begin_address);
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
@@ -266,18 +266,25 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
-  char* Buf_char = (char*)Buf;
-  char write_data[255] = {0};
+  const char* buffer = (const char*)Buf;
 
-  // get command type (e.g. COPY1, PASTE4)
-  if (strncmp(Buf_char, "COPY1", 5) == 0)
-  {
-	  memset(&write_data, 0, strlen(write_data));
-	  clear_flash(CLIPBOARD1_BEGIN_ADDRESS);
-	  strncpy(write_data, &Buf_char[5], 255);
-	  write_metadata_to_flash(strlen(write_data), CLIPBOARD1_METADATA_ADDRESS);
-	  write_string_to_flash(write_data, CLIPBOARD1_BEGIN_ADDRESS);
-  }
+  // get command type (e.g. COPY1, COPY2, etc.)
+  if (strncmp(buffer, "COPY1", 5) == 0)
+	  write_buffer_to_flash(buffer, CLIPBOARD1_METADATA_ADDRESS, CLIPBOARD1_BEGIN_ADDRESS);
+  else if (strncmp(buffer, "COPY2", 5) == 0)
+	  write_buffer_to_flash(buffer, CLIPBOARD2_METADATA_ADDRESS, CLIPBOARD2_BEGIN_ADDRESS);
+  else if (strncmp(buffer, "COPY3", 5) == 0)
+	  write_buffer_to_flash(buffer, CLIPBOARD3_METADATA_ADDRESS, CLIPBOARD3_BEGIN_ADDRESS);
+  else if (strncmp(buffer, "COPY4", 5) == 0)
+	  write_buffer_to_flash(buffer, CLIPBOARD4_METADATA_ADDRESS, CLIPBOARD4_BEGIN_ADDRESS);
+
+  // NOTE: if you don't clear the buffer here, an interesting bug occurs.
+  // copy "hello"
+  // copy "how are you"
+  // copy "hey"
+  // the buffer will then be "hey are you" unless you clear it each time data is received
+  memset(Buf, 0, *Len);
+
   return (USBD_OK);
   /* USER CODE END 6 */
 }
@@ -331,7 +338,14 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
-
+static void write_buffer_to_flash(const char* buffer, uint32_t metadata_address, uint32_t begin_address)
+{
+	char write_data[256] = {0};
+	clear_flash(begin_address);
+	strncpy(write_data, &buffer[5], strlen(buffer));
+	write_metadata_to_flash(strlen(write_data), metadata_address);
+	write_string_to_flash(write_data, begin_address);
+}
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**

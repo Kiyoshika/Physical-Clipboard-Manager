@@ -11,4 +11,12 @@ extern const uint32_t CLIPBOARD2_METADATA_ADDRESS;
 extern const uint32_t CLIPBOARD2_BEGIN_ADDRESS;
 extern const uint32_t CLIPBOARD2_END_ADDRESS;
 
+extern const uint32_t CLIPBOARD3_METADATA_ADDRESS;
+extern const uint32_t CLIPBOARD3_BEGIN_ADDRESS;
+extern const uint32_t CLIPBOARD3_END_ADDRESS;
+
+extern const uint32_t CLIPBOARD4_METADATA_ADDRESS;
+extern const uint32_t CLIPBOARD4_BEGIN_ADDRESS;
+extern const uint32_t CLIPBOARD4_END_ADDRESS;
+
 #endif /* INC_ADDRESSES_H_ */
